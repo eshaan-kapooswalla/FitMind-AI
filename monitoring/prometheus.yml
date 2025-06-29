@@ -1,0 +1,61 @@
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+
+rule_files:
+  # - "first_rules.yml"
+  # - "second_rules.yml"
+
+scrape_configs:
+  # Prometheus itself
+  - job_name: 'prometheus'
+    static_configs:
+      - targets: ['localhost:9090']
+
+  # Spring Boot Actuator endpoints
+  - job_name: 'activity-service'
+    metrics_path: '/actuator/prometheus'
+    static_configs:
+      - targets: ['localhost:8081']
+    scrape_interval: 10s
+
+  - job_name: 'ai-service'
+    metrics_path: '/actuator/prometheus'
+    static_configs:
+      - targets: ['localhost:8082']
+    scrape_interval: 10s
+
+  - job_name: 'gateway'
+    metrics_path: '/actuator/prometheus'
+    static_configs:
+      - targets: ['localhost:8080']
+    scrape_interval: 10s
+
+  - job_name: 'config-server'
+    metrics_path: '/actuator/prometheus'
+    static_configs:
+      - targets: ['localhost:8888']
+    scrape_interval: 10s
+
+  # Database monitoring
+  - job_name: 'mongodb'
+    static_configs:
+      - targets: ['localhost:27017']
+    scrape_interval: 30s
+
+  - job_name: 'postgres'
+    static_configs:
+      - targets: ['localhost:5432']
+    scrape_interval: 30s
+
+  # Message queue monitoring
+  - job_name: 'rabbitmq'
+    static_configs:
+      - targets: ['localhost:15692']
+    scrape_interval: 15s
+
+  # Redis monitoring
+  - job_name: 'redis'
+    static_configs:
+      - targets: ['localhost:6379']
+    scrape_interval: 15s 
