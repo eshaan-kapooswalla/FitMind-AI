@@ -6,6 +6,7 @@ import Dashboard from './pages/Dashboard'
 import Activities from './pages/Activities'
 import AddActivity from './pages/AddActivity'
 import Recommendations from './pages/Recommendations'
+import AICoaching from './pages/AICoaching'
 import Profile from './pages/Profile'
 import Login from './pages/Login'
 import ProtectedRoute from './components/ProtectedRoute'
@@ -25,6 +26,7 @@ function App() {
             <Route path="activities" element={<Activities />} />
             <Route path="activities/add" element={<AddActivity />} />
             <Route path="recommendations" element={<Recommendations />} />
+            <Route path="ai-coaching" element={<AICoaching />} />
             <Route path="profile" element={<Profile />} />
           </Route>
         </Routes>

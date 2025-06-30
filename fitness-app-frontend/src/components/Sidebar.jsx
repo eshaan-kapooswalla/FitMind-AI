@@ -4,6 +4,7 @@ import {
   Activity, 
   Plus, 
   Lightbulb, 
+  Brain,
   User, 
   LogOut 
 } from 'lucide-react'
@@ -17,6 +18,7 @@ const Sidebar = () => {
     { name: 'Activities', href: '/activities', icon: Activity },
     { name: 'Add Activity', href: '/activities/add', icon: Plus },
     { name: 'Recommendations', href: '/recommendations', icon: Lightbulb },
+    { name: 'AI Coaching', href: '/ai-coaching', icon: Brain },
     { name: 'Profile', href: '/profile', icon: User },
   ]
 

@@ -1,6 +1,9 @@
 import axios from 'axios'
 
-const API_BASE_URL = '/api'
+const API_BASE_URL = 'http://localhost:8080/api'
+
+// AI Service endpoints
+const AI_BASE_URL = 'http://localhost:8083/api/ai'
 
 // Create axios instance with default config
 const api = axios.create({
@@ -35,33 +38,203 @@ api.interceptors.response.use(
 )
 
 export const recommendationService = {
-  // Get recommendations for a user
-  async getUserRecommendations(category = null, limit = 10) {
-    const userId = JSON.parse(localStorage.getItem('user'))?.id || 'user-123'
-    const params = new URLSearchParams()
-    if (category) params.append('category', category)
-    params.append('limit', limit)
-    
-    return api.get(`/recommendations/user/${userId}?${params.toString()}`)
+  // Get user recommendations
+  async getUserRecommendations(userId) {
+    try {
+      const response = await axios.get(`${AI_BASE_URL}/recommendations/${userId}`)
+      return response.data
+    } catch (error) {
+      console.error('Error fetching recommendations:', error)
+      throw error
+    }
+  },
+
+  // Generate new recommendation for activity
+  async generateRecommendation(activity) {
+    try {
+      const response = await axios.post(`${AI_BASE_URL}/recommendations`, activity)
+      return response.data
+    } catch (error) {
+      console.error('Error generating recommendation:', error)
+      throw error
+    }
+  },
+
+  // Generate personalized workout plan
+  async generateWorkoutPlan(userProfile, goals, fitnessLevel) {
+    try {
+      const response = await axios.post(`${AI_BASE_URL}/workout-plan`, {
+        userProfile,
+        goals,
+        fitnessLevel
+      })
+      return response.data
+    } catch (error) {
+      console.error('Error generating workout plan:', error)
+      throw error
+    }
+  },
+
+  // Generate nutrition advice
+  async generateNutritionAdvice(activityType, caloriesBurned, dietaryRestrictions) {
+    try {
+      const response = await axios.post(`${AI_BASE_URL}/nutrition-advice`, {
+        activityType,
+        caloriesBurned,
+        dietaryRestrictions
+      })
+      return response.data
+    } catch (error) {
+      console.error('Error generating nutrition advice:', error)
+      throw error
+    }
+  },
+
+  // Analyze progress
+  async analyzeProgress(activities) {
+    try {
+      const response = await axios.post(`${AI_BASE_URL}/progress-analysis`, {
+        activities
+      })
+      return response.data
+    } catch (error) {
+      console.error('Error analyzing progress:', error)
+      throw error
+    }
+  },
+
+  // Generate motivational message
+  async generateMotivationalMessage(userMood, recentActivity, goals) {
+    try {
+      const response = await axios.post(`${AI_BASE_URL}/motivation`, {
+        userMood,
+        recentActivity,
+        goals
+      })
+      return response.data
+    } catch (error) {
+      console.error('Error generating motivational message:', error)
+      throw error
+    }
+  },
+
+  // Generate injury prevention advice
+  async generateInjuryPreventionAdvice(activityType, userAge, fitnessLevel) {
+    try {
+      const response = await axios.post(`${AI_BASE_URL}/injury-prevention`, {
+        activityType,
+        userAge,
+        fitnessLevel
+      })
+      return response.data
+    } catch (error) {
+      console.error('Error generating injury prevention advice:', error)
+      throw error
+    }
+  },
+
+  // Generate social features
+  async generateSocialFeatures(activityType, location, goals) {
+    try {
+      const response = await axios.post(`${AI_BASE_URL}/social-features`, {
+        activityType,
+        location,
+        goals
+      })
+      return response.data
+    } catch (error) {
+      console.error('Error generating social features:', error)
+      throw error
+    }
+  },
+
+  // Get personalized coaching
+  async getPersonalizedCoaching(userId, recentActivities, currentGoals, fitnessLevel) {
+    try {
+      const response = await axios.post(`${AI_BASE_URL}/personalized-coaching`, {
+        userId,
+        recentActivities,
+        currentGoals,
+        fitnessLevel
+      })
+      return response.data
+    } catch (error) {
+      console.error('Error getting personalized coaching:', error)
+      throw error
+    }
+  },
+
+  // Legacy methods for backward compatibility
+  async getUserInsights(userId) {
+    try {
+      // Mock data for now - can be replaced with actual API call
+      return {
+        weeklyProgress: 75,
+        improvementAreas: ['Cardio endurance', 'Strength training'],
+        achievements: ['Consistent workout schedule', 'Improved running pace'],
+        nextGoals: ['Complete 5K run', 'Add strength training']
+      }
+    } catch (error) {
+      console.error('Error fetching insights:', error)
+      throw error
+    }
+  },
+
+  async getUserTrends(userId) {
+    try {
+      // Mock data for now - can be replaced with actual API call
+      return {
+        weeklyActivity: [3, 4, 2, 5, 3, 4, 6],
+        caloriesBurned: [1200, 1400, 800, 1600, 1200, 1400, 1800],
+        averageDuration: [45, 50, 30, 60, 45, 50, 65]
+      }
+    } catch (error) {
+      console.error('Error fetching trends:', error)
+      throw error
+    }
+  },
+
+  async generateRecommendations() {
+    try {
+      // Mock data for now - can be replaced with actual API call
+      return [
+        {
+          id: '1',
+          title: 'Increase Running Frequency',
+          description: 'Based on your recent activities, try adding 2-3 running sessions per week to improve cardiovascular fitness.',
+          category: 'CARDIO',
+          priority: 'HIGH',
+          createdAt: new Date().toISOString()
+        },
+        {
+          id: '2',
+          title: 'Add Strength Training',
+          description: 'Incorporate strength training 2-3 times per week to build muscle and improve overall fitness.',
+          category: 'STRENGTH',
+          priority: 'MEDIUM',
+          createdAt: new Date().toISOString()
+        }
+      ]
+    } catch (error) {
+      console.error('Error generating recommendations:', error)
+      throw error
+    }
+  },
+
+  async updateFeedback(recommendationId, feedback) {
+    try {
+      // Mock implementation - can be replaced with actual API call
+      console.log('Updating feedback for recommendation:', recommendationId, feedback)
+      return { success: true }
+    } catch (error) {
+      console.error('Error updating feedback:', error)
+      throw error
+    }
   },
 
   // Get recommendation for a specific activity
   async getActivityRecommendation(activityId) {
     return api.get(`/recommendations/activity/${activityId}`)
-  },
-
-  // Generate new recommendations
-  async generateRecommendations(focusArea = null) {
-    const userId = JSON.parse(localStorage.getItem('user'))?.id || 'user-123'
-    const params = new URLSearchParams()
-    if (focusArea) params.append('focusArea', focusArea)
-    
-    return api.post(`/recommendations/generate/${userId}?${params.toString()}`)
-  },
-
-  // Update recommendation feedback
-  async updateFeedback(recommendationId, feedback) {
-    return api.put(`/recommendations/${recommendationId}/feedback`, feedback)
   },
 
   // Get user insights

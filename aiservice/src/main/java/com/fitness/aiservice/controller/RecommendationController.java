@@ -1,137 +1,191 @@
 package com.fitness.aiservice.controller;
 
+import com.fitness.aiservice.model.Activity;
 import com.fitness.aiservice.model.Recommendation;
+import com.fitness.aiservice.service.ActivityAIService;
 import com.fitness.aiservice.service.RecommendationService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
-import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
-import jakarta.validation.constraints.NotBlank;
 import java.util.List;
 import java.util.Map;
 
 @RestController
+@RequestMapping("/api/ai")
 @RequiredArgsConstructor
-@RequestMapping("/api/recommendations")
 @Slf4j
-@Validated
+@CrossOrigin(origins = "*")
 public class RecommendationController {
-    // Service to handle recommendation logic
+
+    private final ActivityAIService activityAIService;
     private final RecommendationService recommendationService;
 
-    @GetMapping("/user/{userId}")
-    public ResponseEntity<List<Recommendation>> fetchRecommendationsForUser(
-            @PathVariable @NotBlank String userId,
-            @RequestParam(required = false) String category,
-            @RequestParam(defaultValue = "10") int limit) {
-        log.info("Fetching recommendations for user: {} with category: {}", userId, category);
+    @PostMapping("/recommendations")
+    public ResponseEntity<Recommendation> generateRecommendation(@RequestBody Activity activity) {
         try {
-            List<Recommendation> userRecommendations = recommendationService.getUserRecommendation(userId, category, limit);
-            return ResponseEntity.ok(userRecommendations);
+            log.info("Generating AI recommendation for activity: {}", activity.getId());
+            Recommendation recommendation = activityAIService.generateRecommendation(activity);
+            return ResponseEntity.ok(recommendation);
         } catch (Exception e) {
-            log.error("Error fetching recommendations for user: {}", userId, e);
-            throw e;
+            log.error("Error generating recommendation: ", e);
+            return ResponseEntity.internalServerError().build();
         }
     }
 
-    @GetMapping("/activity/{activityId}")
-    public ResponseEntity<Recommendation> fetchRecommendationForActivity(
-            @PathVariable @NotBlank String activityId) {
-        log.info("Fetching recommendation for activity: {}", activityId);
+    @GetMapping("/recommendations/{userId}")
+    public ResponseEntity<List<Recommendation>> getUserRecommendations(@PathVariable String userId) {
         try {
-            Recommendation activityRecommendation = recommendationService.getActivityRecommendation(activityId);
-            return ResponseEntity.ok(activityRecommendation);
+            List<Recommendation> recommendations = recommendationService.getUserRecommendation(userId);
+            return ResponseEntity.ok(recommendations);
         } catch (Exception e) {
-            log.error("Error fetching recommendation for activity: {}", activityId, e);
-            throw e;
+            log.error("Error fetching recommendations: ", e);
+            return ResponseEntity.internalServerError().build();
         }
     }
 
-    @PostMapping("/generate/{userId}")
-    public ResponseEntity<List<Recommendation>> generateNewRecommendations(
-            @PathVariable @NotBlank String userId,
-            @RequestParam(required = false) String focusArea) {
-        log.info("Generating new recommendations for user: {} with focus area: {}", userId, focusArea);
+    @PostMapping("/workout-plan")
+    public ResponseEntity<Map<String, Object>> generateWorkoutPlan(
+            @RequestBody Map<String, String> request) {
         try {
-            List<Recommendation> newRecommendations = recommendationService.generateRecommendations(userId, focusArea);
-            return ResponseEntity.ok(newRecommendations);
+            String userProfile = request.get("userProfile");
+            String goals = request.get("goals");
+            String fitnessLevel = request.get("fitnessLevel");
+            
+            log.info("Generating workout plan for user with goals: {}", goals);
+            Map<String, Object> workoutPlan = activityAIService.generateWorkoutPlan(userProfile, goals, fitnessLevel);
+            return ResponseEntity.ok(workoutPlan);
         } catch (Exception e) {
-            log.error("Error generating recommendations for user: {}", userId, e);
-            throw e;
+            log.error("Error generating workout plan: ", e);
+            return ResponseEntity.internalServerError().build();
         }
     }
 
-    @PutMapping("/{recommendationId}/feedback")
-    public ResponseEntity<Recommendation> updateRecommendationFeedback(
-            @PathVariable @NotBlank String recommendationId,
-            @RequestBody Map<String, Object> feedback) {
-        log.info("Updating feedback for recommendation: {}", recommendationId);
+    @PostMapping("/nutrition-advice")
+    public ResponseEntity<Map<String, Object>> generateNutritionAdvice(
+            @RequestBody Map<String, Object> request) {
         try {
-            Recommendation updatedRecommendation = recommendationService.updateFeedback(recommendationId, feedback);
-            return ResponseEntity.ok(updatedRecommendation);
+            String activityType = (String) request.get("activityType");
+            Integer caloriesBurned = (Integer) request.get("caloriesBurned");
+            String dietaryRestrictions = (String) request.get("dietaryRestrictions");
+            
+            log.info("Generating nutrition advice for {} activity with {} calories", activityType, caloriesBurned);
+            Map<String, Object> nutritionAdvice = activityAIService.generateNutritionAdvice(
+                activityType, caloriesBurned, dietaryRestrictions);
+            return ResponseEntity.ok(nutritionAdvice);
         } catch (Exception e) {
-            log.error("Error updating feedback for recommendation: {}", recommendationId, e);
-            throw e;
+            log.error("Error generating nutrition advice: ", e);
+            return ResponseEntity.internalServerError().build();
         }
     }
 
-    @GetMapping("/insights/{userId}")
-    public ResponseEntity<Map<String, Object>> getUserInsights(
-            @PathVariable @NotBlank String userId,
-            @RequestParam(required = false) String timeRange) {
-        log.info("Fetching insights for user: {} with time range: {}", userId, timeRange);
+    @PostMapping("/progress-analysis")
+    public ResponseEntity<Map<String, Object>> analyzeProgress(
+            @RequestBody Map<String, Object> request) {
         try {
-            Map<String, Object> insights = recommendationService.getUserInsights(userId, timeRange);
-            return ResponseEntity.ok(insights);
+            @SuppressWarnings("unchecked")
+            List<Map<String, Object>> activities = (List<Map<String, Object>>) request.get("activities");
+            
+            log.info("Analyzing progress for {} activities", activities.size());
+            Map<String, Object> progressAnalysis = activityAIService.analyzeProgress(activities);
+            return ResponseEntity.ok(progressAnalysis);
         } catch (Exception e) {
-            log.error("Error fetching insights for user: {}", userId, e);
-            throw e;
+            log.error("Error analyzing progress: ", e);
+            return ResponseEntity.internalServerError().build();
         }
     }
 
-    @GetMapping("/trends/{userId}")
-    public ResponseEntity<Map<String, Object>> getUserTrends(
-            @PathVariable @NotBlank String userId,
-            @RequestParam(defaultValue = "30") int days) {
-        log.info("Fetching trends for user: {} for last {} days", userId, days);
+    @PostMapping("/motivation")
+    public ResponseEntity<Map<String, Object>> generateMotivationalMessage(
+            @RequestBody Map<String, String> request) {
         try {
-            Map<String, Object> trends = recommendationService.getUserTrends(userId, days);
-            return ResponseEntity.ok(trends);
+            String userMood = request.get("userMood");
+            String recentActivity = request.get("recentActivity");
+            String goals = request.get("goals");
+            
+            log.info("Generating motivational message for user mood: {}", userMood);
+            Map<String, Object> motivation = activityAIService.generateMotivationalMessage(
+                userMood, recentActivity, goals);
+            return ResponseEntity.ok(motivation);
         } catch (Exception e) {
-            log.error("Error fetching trends for user: {}", userId, e);
-            throw e;
+            log.error("Error generating motivational message: ", e);
+            return ResponseEntity.internalServerError().build();
         }
     }
 
-    @DeleteMapping("/{recommendationId}")
-    public ResponseEntity<Void> deleteRecommendation(
-            @PathVariable @NotBlank String recommendationId,
-            @RequestParam @NotBlank String userId) {
-        log.info("Deleting recommendation: {} for user: {}", recommendationId, userId);
+    @PostMapping("/injury-prevention")
+    public ResponseEntity<Map<String, Object>> generateInjuryPreventionAdvice(
+            @RequestBody Map<String, String> request) {
         try {
-            recommendationService.deleteRecommendation(recommendationId, userId);
-            return ResponseEntity.noContent().build();
+            String activityType = request.get("activityType");
+            String userAge = request.get("userAge");
+            String fitnessLevel = request.get("fitnessLevel");
+            
+            log.info("Generating injury prevention advice for {} activity", activityType);
+            Map<String, Object> injuryAdvice = activityAIService.generateInjuryPreventionAdvice(
+                activityType, userAge, fitnessLevel);
+            return ResponseEntity.ok(injuryAdvice);
         } catch (Exception e) {
-            log.error("Error deleting recommendation: {} for user: {}", recommendationId, userId, e);
-            throw e;
+            log.error("Error generating injury prevention advice: ", e);
+            return ResponseEntity.internalServerError().build();
+        }
+    }
+
+    @PostMapping("/social-features")
+    public ResponseEntity<Map<String, Object>> generateSocialFeatures(
+            @RequestBody Map<String, String> request) {
+        try {
+            String activityType = request.get("activityType");
+            String location = request.get("location");
+            String goals = request.get("goals");
+            
+            log.info("Generating social features for {} activity in {}", activityType, location);
+            Map<String, Object> socialFeatures = activityAIService.generateSocialFeatures(
+                activityType, location, goals);
+            return ResponseEntity.ok(socialFeatures);
+        } catch (Exception e) {
+            log.error("Error generating social features: ", e);
+            return ResponseEntity.internalServerError().build();
+        }
+    }
+
+    @PostMapping("/personalized-coaching")
+    public ResponseEntity<Map<String, Object>> getPersonalizedCoaching(
+            @RequestBody Map<String, Object> request) {
+        try {
+            String userId = (String) request.get("userId");
+            @SuppressWarnings("unchecked")
+            List<Map<String, Object>> recentActivities = (List<Map<String, Object>>) request.get("recentActivities");
+            String currentGoals = (String) request.get("currentGoals");
+            String fitnessLevel = (String) request.get("fitnessLevel");
+            
+            log.info("Generating personalized coaching for user: {}", userId);
+            
+            // Generate comprehensive coaching plan
+            Map<String, Object> coaching = Map.of(
+                "workoutPlan", activityAIService.generateWorkoutPlan(
+                    "User with recent activities", currentGoals, fitnessLevel),
+                "nutritionAdvice", activityAIService.generateNutritionAdvice(
+                    "Mixed activities", 500, "None"),
+                "progressAnalysis", activityAIService.analyzeProgress(recentActivities),
+                "motivation", activityAIService.generateMotivationalMessage(
+                    "Motivated", "Recent workout", currentGoals),
+                "injuryPrevention", activityAIService.generateInjuryPreventionAdvice(
+                    "Mixed activities", "25-35", fitnessLevel),
+                "socialFeatures", activityAIService.generateSocialFeatures(
+                    "Mixed activities", "Local area", currentGoals)
+            );
+            
+            return ResponseEntity.ok(coaching);
+        } catch (Exception e) {
+            log.error("Error generating personalized coaching: ", e);
+            return ResponseEntity.internalServerError().build();
         }
     }
 
     @GetMapping("/health")
-    public ResponseEntity<Map<String, Object>> health() {
-        log.info("AI Service health check");
-        try {
-            Map<String, Object> healthStatus = Map.of(
-                "status", "healthy",
-                "service", "AI Recommendation Service",
-                "timestamp", System.currentTimeMillis()
-            );
-            return ResponseEntity.ok(healthStatus);
-        } catch (Exception e) {
-            log.error("Health check failed", e);
-            throw e;
-        }
+    public ResponseEntity<Map<String, String>> healthCheck() {
+        return ResponseEntity.ok(Map.of("status", "AI Service is running", "ai", "Gemini AI"));
     }
 }
