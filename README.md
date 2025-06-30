@@ -318,8 +318,7 @@ npm test
 4. Add tests
 5. Submit a pull request
 
-## 📄 **License**
-This project is licensed under the MIT License.
+
 
 ## 🙏 **Acknowledgments**
 - Google Gemini AI for intelligent fitness recommendations
